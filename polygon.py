@@ -84,11 +84,15 @@ class Polygon:
         def extend_one_vertex(v,v1,v2):
             e1,e2=v1.subtract(v),v2.subtract(v)
             ne1,ne2=e1.norm(),e2.norm()
-            sl=d/math.sqrt(1-ne.dot(ne2)**2)
-            se1,se2=ne1.scale(sl),ne2.scale(sl)
-            if ne1.cross_product(ne2)>0:
-                se1,se2=se1.scale(-1),se2.scale(-1)
-            return v.add(se1.add(se2))
+            ###v,v1,v2 in a line
+            if abs(abs(ne1.dot(ne2))-1)<self.eps:
+                pass
+            else:
+                sl=d/math.sqrt(1-ne.dot(ne2)**2)
+                se1,se2=ne1.scale(sl),ne2.scale(sl)
+                if ne1.cross_product(ne2)>0:
+                    se1,se2=se1.scale(-1),se2.scale(-1)
+                return v.add(se1.add(se2))
         
         vs=[extend_one_vertex(v,v1,v2) for v1,v,v2 in 
             zip(self.vertexs,self.vertexs[1:]+[self.vertexs[0]],self.vertexs[2:]+self.vertexs[0:2])]
