@@ -76,11 +76,11 @@ class Polygon:
         return hvs
 
     def in_polygon(self,p):
-    angle_edges=[( v1.subtract(p),v2.subtract(p)) 
-                 for v1,v2 in zip(self.vertexs,self.vertexs[1:]+[self.vertexs[0]])]
-    angle_cross_prods=[(e1.angle(e2),e1.cross_product(e2)) for e1,e2 in angle_edges]
-    angles=[a if self.sign(c) else -a for a,c in angle_cross_prods]
-    return abs(abs(sum(angles))-2*math.pi)<self.eps
+        angle_edges=[( v1.subtract(p),v2.subtract(p)) 
+                     for v1,v2 in zip(self.vertexs,self.vertexs[1:]+[self.vertexs[0]])]
+        angle_cross_prods=[(e1.angle(e2),e1.cross_product(e2)) for e1,e2 in angle_edges]
+        angles=[a if self.sign(c) else -a for a,c in angle_cross_prods]
+        return abs(abs(sum(angles))-2*math.pi)<self.eps
 
     def in_edge(self,p):
         def in_line(vertex1,vertex2):
