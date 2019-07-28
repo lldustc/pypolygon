@@ -72,11 +72,12 @@ class Polygon:
 
     def in_edge(self,p):
         def in_line(vertex1,vertex2):
-            is_in_line=lambda p1,p2:abs(p.y-(p1.y+(p2.y-p1.y)/(p2.x-p1.x)*(p.x-p1.x)))<self.eps
+            is_in_line=lambda p1,p2:abs(abs(p1.dot(p2)-math.sqrt(p1.dot(p1)*p2.dot(p2))))<self.eps
             in_range=lambda p1,p2:min(p1.x,p2.x)<=p.x<max(p1.x,p2.x) and min(p1.y,p2.y)<=p.y<=max(p1.y,p2.y)
+            is_close=lambda x1,x2:return abs(x1-x2)<self.eps
             ###vertical condition
-            if (abs(vertex1.x-vertex2.x)<self.eps and abs(vertex1.x-p.x)<self.eps and in_range(vertex1,vertex2))\
-               or ((not abs(vertex1.x-vertex2.x)>=self.eps) and in_range(vertex1,vertex2) and is_in_line(vertex1,vertex2)):
+            if (is_close(vertex1.x,vertex2.x) and is_close(vertex1.x,p.x) and in_range(vertex1,vertex2))\
+               or ((not is_close(vertex1.x,vertex2.x)) and in_range(vertex1,vertex2) and is_in_line(vertex1,vertex2)):
                 return True
             return False
         for p1,p2 in zip(self.vertexs,self.vertexs[1:]+[self.vertexs[0]]):
