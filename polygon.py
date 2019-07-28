@@ -31,6 +31,10 @@ class Vector:
             return math.acos(self.dot(v)/math.sqrt(self.dot(self)*v.dot(v)))
         return 0
    
+    ###rotate matrix is [[cosa,-sina],[sina,cosa]]
+    def rotate(self,a):
+       return Vector(math.cos(a)*self.x-math.sin(a)*self.y,math.sin(a)*self.x+math.cos(a)*self.y)
+        
 
 class Polygon:
     ###change anticlockwise input to clockwise 
@@ -86,7 +90,7 @@ class Polygon:
             ne1,ne2=e1.norm(),e2.norm()
             ###v,v1,v2 in a line
             if abs(abs(ne1.dot(ne2))-1)<self.eps:
-                pass
+                return ne2.rotate(1/2.*math.pi).scale(s)
             else:
                 sl=d/math.sqrt(1-ne.dot(ne2)**2)
                 se1,se2=ne1.scale(sl),ne2.scale(sl)
