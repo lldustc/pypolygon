@@ -110,4 +110,29 @@ class Polygon:
         angles=[(v1-p).angle(v2-p) for v1,v2 in self.neighbor_vertex_pairs()]
         return abs(abs(sum(angles))-2*math.pi)<self.eps
 
+    def in_edge(self,p):
+        in_range=lambda p1,p2:min(p1.x,p2.x)<=p.x<=max(p1.x,p2.x) and \
+                min(p1.y,p2.y)<=p.y<=max(p1.y,p2.y)
+        for p1,p2 in self.neighbor_vertex_pairs():
+            if (p-p1).in_line(p-p2,self.eps) and in_range(p1,p2):
+                return True
+        return False
 
+    def extend(self,s):
+        def extend_one_vertex(v1,v2,v3):
+            '''
+            v1 prev v2,v2 prev v3
+            '''
+            ne1,ne2=(v1-v2).norm(),(v3-v2).norm()
+            if ne1.in_line(ne2):
+                return v2 + ( ne2.rotate(1/2*math.pi)*s )
+            else:
+                sl=s/math.sqrt(1-ne1.dot(ne2)**2)
+                if ne1.anticlockwise(ne2):sl=-sl
+                se1,se2=ne1*sl,ne2*sl
+                return v2+(se1+se2)
+        vs=[extend_one_vertex(v1,v2,v3) for v1,v2,v3 in self.neightbor_vertex_triples()]
+        return Polygon([(v.x,v.y) for v in vs])
+
+    def tolist(self):
+        return [(v.x,v.y) for v in self.vertexes]
