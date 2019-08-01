@@ -59,21 +59,20 @@ class Vector:
     def in_line(self,v,eps):
         return self.length()<eps or v.length()<eps or abs(abs(self.norm().dot(v.norm()))-1)<eps
 
+
 class Polygon:
 
-    def __init__(self,vertexes,clockwise=True,eps=0.000001):
+    def __init__(self,vertexes,eps=0.000001):
         '''
         change anticlockwise to clockwise
         '''
-        self.vertexes=self.prepare(vertexes,clockwise)
         self.eps=eps
+        self.vertexes=self.prepare(vertexes)
 
-    def prepare(self,vertexes,clockwise):
+    def prepare(self,vertexes):
         vs=vertexes[:]
         if vs[0]==vs[-1]:
             del vs[-1]
-        if not clockwise:
-            vs=list(reversed(vs))
         return [Vector(v[0],v[1]) for v in vs]
 
     def is_valid(self):
@@ -95,11 +94,27 @@ class Polygon:
         edges=[v2-v1 for v1,v2 in self.neighbor_edge_pairs()]
         return zip(edges,edges[1:]+[edges[0]])
 
+    def is_clockwise(self):
+        def get_max_x_index():
+            index,max_x=0,self.vertexes[0].x
+            for i,v in enumerate(self.vertexes[1:]):
+                if v.x>max_x:
+                    index,max_x=i+1,v.x
+            return index
+        ind=get_max_x_index()
+        if ind==0:
+            v1,v2,v3=self.vertexes[-1],self.vertexes[0],self.vertexes[1]
+        else:
+            v1,v2,v3=self.vertexes[ind-1],self.vertexes[ind],self.vertexes[( ind+1 )%len(self.vertexes)]
+        return not (v2-v1).anticlockwise(v3-v2)
+
     def hollow_vertexes(self):
-        ss=[e1.anticlockwise(e2) for e1,e2 in self.neighbor_edge_pairs]
+        ss=[ ( e1.anticlockwise(e2),e1.in_line(e2.self.eps) ) for e1,e2 in self.neighbor_edge_pairs]
         hvs=[]
-        for i,s in enumerate(ss):
-            if s:hvs.append(i+1)
+        clockwise=self.is_clockwise()
+        for i,(s,is_line) in enumerate(ss):
+            if (not is_line) and ((clockwise and s) or ((not clockwise) and (not s))):
+                hvs.append(i+1)
         return hvs
 
     def in_polygon(self,p):
@@ -124,11 +139,16 @@ class Polygon:
             v1 prev v2,v2 prev v3
             '''
             ne1,ne2=(v1-v2).norm(),(v3-v2).norm()
+            clockwise=self.is_clockwise()
             if ne1.in_line(ne2):
-                return v2 + ( ne2.rotate(1/2*math.pi)*s )
+                rotate_angle=1/2*math.pi
+                if not clockwise:rotate_angle=-rotate_angle
+                return v2 + ( ne2.rotate(rotate_angle)*s )
             else:
                 sl=s/math.sqrt(1-ne1.dot(ne2)**2)
-                if ne1.anticlockwise(ne2):sl=-sl
+                if (clockwise and ne1.anticlockwise(ne2)) or \
+                    ((not clockwise) and (not ne1.anticlockwise(ne2))):
+                    sl=-sl
                 se1,se2=ne1*sl,ne2*sl
                 return v2+(se1+se2)
         vs=[extend_one_vertex(v1,v2,v3) for v1,v2,v3 in self.neightbor_vertex_triples()]
